@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jobs CRUD Interface</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .form-container, .table-container {
+            margin-bottom: 20px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            width: 400px;
+            margin: 0 auto;
+        }
+
+        label, input, textarea {
+            margin-bottom: 10px;
+        }
+
+        input, textarea {
+            padding: 8px;
+            font-size: 14px;
+        }
+
+        button {
+            padding: 10px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .action-buttons button {
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Jobs CRUD Interface</h1>
+
+<div class="form-container">
+    <form id="jobForm">
+        <label for="name">Job Name:</label>
+        <input type="text" id="name" name="name" required>
+
+        <label for="description">Description:</label>
+        <textarea id="description" name="description" rows="4" required></textarea>
+
+        <label for="whereWork">Where Work:</label>
+        <input type="text" id="whereWork" name="whereWork" required>
+
+        <label for="whereStudy">Where Study:</label>
+        <input type="text" id="whereStudy" name="whereStudy" required>
+
+        <label for="attachments">Attachments:</label>
+        <input type="file" id="attachments" name="attachments" multiple>
+
+        <button type="submit">Save Job</button>
+    </form>
+</div>
+
+<div class="table-container">
+    <table id="jobsTable">
+        <thead>
+        <tr>
+            <th>Job Name</th>
+            <th>Description</th>
+            <th>Where Work</th>
+            <th>Where Study</th>
+            <th>Attachments</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- Jobs will be dynamically added here -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+    const jobForm = document.getElementById('jobForm');
+    const jobsTable = document.getElementById('jobsTable').getElementsByTagName('tbody')[0];
+    const baseUrl = 'http://localhost:80/api/view'
+
+
+    // Function to load jobs from backend
+    function loadJobs() {
+        fetch(baseUrl + '/getJobs')
+            .then(response => response.json())
+            .then(data => {
+                jobsTable.innerHTML = ''; // Clear existing table rows
+                data.forEach(job => {
+                    const row = jobsTable.insertRow();
+                    row.innerHTML = `
+                        <td>${job.name}</td>
+                        <td>${job.description}</td>
+                        <td>${job.whereWork}</td>
+                        <td>${job.whereStudy}</td>
+                       <td>
+                             ${job.attachment.map(a => `<img src="${a.url}" style="width: 100px; height: 100px;" />`).join(', ')}
+                        </td>
+
+                        <td class="action-buttons">
+
+                            <button onclick="deleteJob(${job.id})">Delete</button>
+                        </td>
+                    `;
+                });
+            });
+    }
+
+    /* <button onClick="editJob(${job.id})">Edit</button>*/
+    // Function to save or update a job
+    jobForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        const formData = new FormData(jobForm);
+        const files = document.getElementById('attachments').files;
+        for (let i = 0; i < files.length; i++) {
+            formData.append('files', files[i]);
+        }
+
+        const url = baseUrl + '/jobs';
+        fetch(url, {
+            method: 'POST',
+            body: formData
+        }).then(() => {
+            loadJobs();
+            jobForm.reset();
+        });
+    });
+
+    function deleteJob(id) {
+        if (confirm('Are you sure you want to delete this job?')) {
+            fetch(baseUrl + `/jobs/${id}`, {method: 'DELETE'})
+                .then(() => loadJobs());
+        }
+    }
+
+    // Load jobs when the page loads
+    document.addEventListener('DOMContentLoaded', loadJobs);
+</script>
+</body>
+</html>

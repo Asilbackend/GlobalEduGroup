@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FunUser Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .add-user-container, .search-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .add-user-container input[type="text"], .search-container input[type="text"] {
+            width: 70%;
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .add-user-container input[type="submit"], .search-container input[type="submit"] {
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .add-user-container input[type="submit"]:hover, .search-container input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+
+<h1>FunUser Management</h1>
+
+<div class="container">
+    <h2>Add FunUser</h2>
+    <div class="add-user-container">
+        <input type="text" id="fullName" placeholder="Full Name">
+        <input type="text" id="phone" placeholder="Phone">
+        <input type="submit" value="Add FunUser" onclick="addFunUser()">
+    </div>
+</div>
+
+<div class="container">
+    <div class="search-container">
+        <input type="text" id="searchPhone" placeholder="Search by phone">
+        <input type="submit" value="Search by Phone" onclick="searchFunUserByPhone()">
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="searchName" placeholder="Search by name">
+        <input type="submit" value="Search by Name" onclick="searchFunUserByName()">
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="searchText" placeholder="Search by text">
+        <input type="submit" value="Search by Text" onclick="searchFunUser()">
+    </div>
+
+    <table id="userTable">
+        <thead>
+        <tr>
+            <th>Full Name</th>
+            <th>Phone</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- Users will be appended here -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+    const apiBaseUrl = 'http://localhost:80/api/advice';
+
+    function addFunUser() {
+        const fullName = document.getElementById('fullName').value;
+        const phone = document.getElementById('phone').value;
+
+        fetch(apiBaseUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({fullName, phone})
+        })
+            .then(response => response.text())
+            .then(data => {
+                alert(data);
+                document.getElementById('fullName').value = '';
+                document.getElementById('phone').value = '';
+                getAllFunUsers(); // Refresh the table
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function getAllFunUsers() {
+        fetch(apiBaseUrl)
+            .then(response => response.json())
+            .then(users => {
+                const userTableBody = document.querySelector('#userTable tbody');
+                userTableBody.innerHTML = '';
+                users.forEach(user => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td>${user.fullName}</td><td>${user.phone}</td>`;
+                    userTableBody.appendChild(row);
+                });
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function searchFunUserByPhone() {
+        const phone = document.getElementById('searchPhone').value;
+        fetch(`${apiBaseUrl}/phone/${phone}`)
+            .then(response => response.json())
+            .then(users => updateTable(users))
+            .catch(error => console.error('Error:', error));
+    }
+
+    function searchFunUserByName() {
+        const name = document.getElementById('searchName').value;
+        fetch(`${apiBaseUrl}/name/${name}`)
+            .then(response => response.json())
+            .then(users => updateTable(users))
+            .catch(error => console.error('Error:', error));
+    }
+
+    function searchFunUser() {
+        const text = document.getElementById('searchText').value;
+        fetch(`${apiBaseUrl}/search/${text}`)
+            .then(response => response.json())
+            .then(users => updateTable(users))
+            .catch(error => console.error('Error:', error));
+    }
+
+    function updateTable(users) {
+        const userTableBody = document.querySelector('#userTable tbody');
+        userTableBody.innerHTML = '';
+        users.forEach(user => {
+            const row = document.createElement('tr');
+            row.innerHTML = `<td>${user.fullName}</td><td>${user.phone}</td>`;
+            userTableBody.appendChild(row);
+        });
+    }
+
+    // Load all users initially
+    getAllFunUsers();
+</script>
+</body>
+</html>
