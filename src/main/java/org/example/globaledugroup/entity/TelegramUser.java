@@ -30,6 +30,7 @@ public class TelegramUser extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private TELEGRAM_STATE telegramState = TELEGRAM_STATE.START;
     private boolean isAttendRating;
+    private boolean isShareContactForFunUser;
 
     public TelegramUser(Long chatId, String botName, String nickName, BotRole botRole) {
         this.chatId = chatId;

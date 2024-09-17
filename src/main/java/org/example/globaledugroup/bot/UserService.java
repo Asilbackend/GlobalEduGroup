@@ -28,20 +28,26 @@ public class UserService {
                         botService.acceptSurveyAndGenerateBtn(telegramUser);
                         botDataService.setAndPutState(telegramUser, TELEGRAM_STATE.RATING_OF_SURVEY);
                     }
-                } else if (text.equals("/start")) {
+                }
+                if (text.equals("/start")) {
                     botService.acceptStartSendData(telegramUser);
                 } else {
                     if (telegramUser.getTelegramState().equals(TELEGRAM_STATE.OPERATORS_OF_SURVEY)) {
                         botService.acceptSurveyAndGenerateBtn(telegramUser);
                         botDataService.setAndPutState(telegramUser, TELEGRAM_STATE.RATING_OF_SURVEY);
                     } else if (telegramUser.getTelegramState().equals(TELEGRAM_STATE.ASK_CONTACT_FOR_USER)) {
-                        botService.askContactUser(telegramUser, text);
+                        if (!telegramUser.isShareContactForFunUser()){
+                            botService.askContactUser(telegramUser, text);
+                        }
                     }
                 }
             } else if (message.contact() != null) {
                 if (telegramUser.getTelegramState().equals(TELEGRAM_STATE.ASK_CONTACT_FOR_USER)) {
-                    System.out.println("phone: "+message.contact().phoneNumber());
-                    botService.askContactUser(telegramUser, message.contact().phoneNumber());
+                    if (!telegramUser.isShareContactForFunUser()){
+                        System.out.println("phone: "+message.contact().phoneNumber());
+                        botService.askContactUser(telegramUser, message.contact().phoneNumber());
+                    }
+
                 }
             } else if (message.location() != null) {
                 /// L  O  C  A  T  I  O  N

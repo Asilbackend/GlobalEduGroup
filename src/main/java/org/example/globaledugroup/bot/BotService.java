@@ -84,7 +84,8 @@ public class BotService {
     public void leaveContact(TelegramUser telegramUser) {
         SendMessage sendMessage = new SendMessage(telegramUser.getChatId(), "Biz bilan bog'lanish uchun kontakt yuboring tugmasini bosing yoki raqamingizni qoldiring 😊 \n\n Namuna: +998901234567");
         sendMessage.replyMarkup(botUtils.generateContactBtn());
-        telegramBot.execute(sendMessage);
+        SendResponse sendResponse = telegramBot.execute(sendMessage);
+        BotUtils.DELETE_MESSAGES.put(telegramUser.getChatId(), sendResponse.message().messageId());
         botDataService.setAndPutState(telegramUser, TELEGRAM_STATE.ASK_CONTACT_FOR_USER);
     }
 
@@ -828,15 +829,18 @@ public class BotService {
         Matcher matcher = PHONE_PATTERN.matcher(text);
         if (matcher.matches()) {
             funUserRepository.save(new FunUser(telegramUser.getBotName(), text));
+            telegramUser.setShareContactForFunUser(true);
+            telegramUserRepo.save(telegramUser);
             thanksForContactMessage(telegramUser);
             botDataService.setAndPutState(telegramUser, TELEGRAM_STATE.ASKED_CONTACT);
+            botUtils.deleteMessages(telegramUser.getChatId());
         } else {
             leaveContact(telegramUser);
         }
     }
 
     public void thanksForContactMessage(TelegramUser telegramUser) {
-        SendMessage sendMessage = new SendMessage(telegramUser.getChatId(), "Yaqinda menejerlarimiz siz bilan bog'lanishadi");
+        SendMessage sendMessage = new SendMessage(telegramUser.getChatId(), "Yaqinda menejerlarimiz siz bilan bog'lanishadi \uD83E\uDD1D \n\nBizga ishonganingiz uchun tashakkur \uD83D\uDE0A.");
         telegramBot.execute(sendMessage);
     }
 }

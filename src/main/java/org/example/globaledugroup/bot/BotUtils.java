@@ -15,7 +15,6 @@ import java.util.*;
 @RequiredArgsConstructor
 public class BotUtils {
     private final TelegramBot telegramBot;
-    public static List<Integer> DELETE_MESSAGES1 = new ArrayList<>();
     public static Map<Long, Integer> DELETE_MESSAGES = new HashMap<>();
 
     public InlineKeyboardMarkup generateInlineBinaryBtn(List<String> str) {
@@ -73,13 +72,6 @@ public class BotUtils {
         }
         DELETE_MESSAGES.remove(chatId);
     }
-
-    public void editMessage(Long userChatId, Integer messageId, InlineKeyboardMarkup inlineKeyboardMarkup) {
-        EditMessageReplyMarkup editMessageReplyMarkup = new EditMessageReplyMarkup(userChatId, messageId)
-                .replyMarkup(inlineKeyboardMarkup);
-        telegramBot.execute(editMessageReplyMarkup);
-    }
-
     public void editInlineButton(Long userChatId, Integer messageId, InlineKeyboardMarkup inlineKeyboardMarkup) {
         EditMessageReplyMarkup editMessageReplyMarkup = new EditMessageReplyMarkup(userChatId, messageId)
                 .replyMarkup(inlineKeyboardMarkup);
